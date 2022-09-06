@@ -1,5 +1,5 @@
 galaxy_info:
-  role_name: ssh-port
+  role_name: ssh_port
   author: Austin Arbour
   description: Simple role to detect a host's SSH port and update to a custom one if needed.
   company: Not Your Cloud

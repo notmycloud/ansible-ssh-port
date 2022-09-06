@@ -14,7 +14,7 @@ playbook.yaml
   gather_facts: no
   
   roles:
-    - role: notmycloud.ssh-port
+    - role: notmycloud.ssh_port
       vars:
         ssh_port_change: false    # Specify true if you want this role to update the SSH listening port to the specified ansible_port.
         ansible_port: 22          # Specify which port SSH "should" be listening on.
