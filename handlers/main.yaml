@@ -1,0 +1,12 @@
+---
+- name: Restart SSH
+  ansible.builtin.service: 
+    name: sshd
+    state: restarted
+
+- name: Ping SSH
+  ansible.builtin.ping:
+
+- name: Set SSH Port
+  ansible.builtin.set_fact:
+    ansible_port: "{{ custom_port }}"

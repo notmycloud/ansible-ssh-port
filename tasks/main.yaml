@@ -1,0 +1,21 @@
+- name: Detect SSH Port
+  ansible.builtin.include_tasks: detect_port.yaml
+
+- name: Save SSH Hostkey
+  ansible.builtin.include_role: 
+    name: notmycloud.ssh-keyscan
+    apply:
+      delegate_to: "localhost"
+  vars:
+    global_known_hosts: no
+    ssh:
+      port: "{{ ansible_port | default(22) }}"
+      host: "{{ inventory_hostname }}"
+      # Using inventory_hostname because delegate_to overrides ansible_host
+      # host: "{{ ansible_host | default(inventory_hostname) }}"
+
+- name: Change SSH Port
+  ansible.builtin.include_tasks: change_port.yaml
+  when:
+    - ssh_port_change
+    - ansible_port != 22

@@ -1,0 +1,70 @@
+---
+# Record what Ansible thinks the correct SSH port is for later use.
+- name: Set configured port fact
+  ansible.builtin.set_fact:
+    custom_port: "{{ ansible_port }}"
+
+# Have Ansible check if {{ inventory_hostname }} is currently listening on port 22
+- name: Check if {{ inventory_hostname }} is using the default SSH port (22)
+  ansible.builtin.wait_for:
+    port: "22"
+    state: "started"
+    host: "{{ inventory_hostname }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: "yes"
+  register: default_ssh
+
+# If reachable, ensure ansible_port is set to (22)
+- name: Set inventory ansible_port to default (22)
+  ansible.builtin.set_fact:
+    ansible_port: "22"
+  when: 
+    - default_ssh is defined
+    - not default_ssh.failed
+    - default_ssh.state == "started"
+  register: ssh_port_set
+
+# Fail if unreachable and the configured port is also (22)
+- name: Fail if default SSH port was unreachable and no custom port
+  ansible.builtin.fail:
+    msg: "Remote host is not availble on port 22 or custom port not set."
+  when: 
+    - default_ssh is defined
+    - default_ssh.failed
+    - default_ssh.state is undefined
+    - ansible_port == 22
+
+# If unreachable on port 22, check if {{ inventory_hostname }} 
+# is reachable on {{ ansible_port }} provided by the inventory
+- name: Check if we're using a custom SSH port ({{ ansible_port }})
+  ansible.builtin.wait_for:
+    port: "{{ ansible_port }}"
+    state: "started"
+    host: "{{ inventory_hostname }}"
+    connect_timeout: "5"
+    timeout: "10"
+  delegate_to: "localhost"
+  ignore_errors: "yes"
+  register: configured_ssh
+  when: 
+    - default_ssh is defined
+    - default_ssh.failed
+    - default_ssh.state is undefined
+
+# If {{ ansible_port }} is reachable, then carry on
+- name: SSH port is configured properly ({{ ansible_port }})
+  ansible.builtin.debug:
+    msg: "SSH port is configured properly"
+  when: 
+    - configured_ssh is defined
+    - configured_ssh.skipped is not defined
+    - configured_ssh.state == "started"
+  register: ssh_port_set
+
+# Fail if the SSH port is neither the default or the custom port.
+- name: Fail if SSH port was not auto-detected (unknown)
+  ansible.builtin.fail:
+    msg: "The SSH port is neither 22 or {{ ansible_port }}."
+  when: ssh_port_set is undefined
