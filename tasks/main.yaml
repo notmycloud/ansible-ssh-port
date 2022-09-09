@@ -3,7 +3,7 @@
 
 - name: Save SSH Hostkey
   ansible.builtin.include_role: 
-    name: notmycloud.ssh-keyscan
+    name: notmycloud.ssh_keyscan
     apply:
       delegate_to: "localhost"
   vars:
