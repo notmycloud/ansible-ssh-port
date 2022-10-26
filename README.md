@@ -1,3 +1,5 @@
+# This repository is archived in favor of notmycloud/ansible-ssh_port_fingerprint
+
 # ansible-ssh-port
 ## Description
 Detect the host's SSH port between a primary (22) and alternate (variable) and update the listening port as needed.
